@@ -1,0 +1,11 @@
+--- subversion-1.8.1/build.conf.pre	2013-08-12 10:10:08.772000071 -0400
++++ subversion-1.8.1/build.conf	2013-08-12 12:23:54.454997060 -0400
+@@ -381,7 +381,7 @@
+ path = tools/server-side/mod_dontdothat
+ nonlibs = mod_dav_svn apr aprutil
+ libs = libsvn_subr xml
+-install = tools
++install = apache-mod
+ msvc-libs = libhttpd.lib
+ 
+ # ----------------------------------------------------------------------------

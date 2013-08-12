@@ -23,7 +23,7 @@
 # Use system versions where feasible, included tarballs when not
 %global with_system_neon 1
 %global with_system_python 1
-%global with_system_sqlite 1
+%global with_system_sqlite 0
 
 # Define as 1 to run test suite,
 # fails on older OS's, takes an extra hour to run
@@ -59,7 +59,7 @@
 # Local tarballs used only when system components are too old
 %global neon_version 0.28.4
 %global python_version 2.4.6
-%global sqlite_amalgamation_version 3.6.22
+%global sqlite_amalgamation_version 3071700
 
 # set JDK path to build javahl; default for JPackage
 %global jdk_path /usr/lib/jvm/java
@@ -77,26 +77,26 @@
 
 Summary: A Modern Concurrent Version Control System
 Name: subversion
-Version: 1.7.11
+Version: 1.8.1
 Release: 0.1%{?dist}
 License: ASL 2.0
 Group: Development/Tools
 URL: http://subversion.apache.org/
 Source0: http://www.apache.org/dist/subversion/subversion-%{version}.tar.bz2
 Source1: subversion.conf
-Source2: http://sqlite.org/sqlite-amalgamation-%{sqlite_amalgamation_version}.tar.gz
+Source2: http://www.sqlite.org/2013/sqlite-autoconf-%{sqlite_amalgamation_version}.tar.gz
 Source3: filter-requires.sh
 Source4: http://www.xsteve.at/prg/emacs/psvn.el
 Source5: psvn-init.el
 Source6: svnserve.init
 
-Patch1: subversion-1.7.0-rpath.patch
-Patch2: subversion-1.7.0-pie.patch
-Patch3: subversion-1.7.0-kwallet.patch
-Patch4: subversion-1.7.2-ruby19.patch
-Patch5: subversion-1.7.4-kwallet2.patch
-Patch6: subversion-1.7.9-rubybind.patch
-Patch7: subversion-1.7.9-swighash.patch
+Patch1: subversion-1.8.0-rpath.patch
+Patch2: subversion-1.8.0-pie.patch
+Patch3: subversion-1.8.0-kwallet.patch
+Patch4: subversion-1.8.0-rubybind.patch
+Patch5: subversion-1.8.0-aarch64.patch
+Patch98: subversion-1.8.0-dontdothat.patch
+
 BuildRequires: apr-devel >= 0.9.4
 BuildRequires: apr-util-devel >= 0.9.4
 BuildRequires: autoconf
@@ -264,7 +264,7 @@ This package includes the Ruby bindings to the Subversion libraries.
 %if !%{with_system_sqlite}
 echo "Setting up included %{SOURCE2}"
 %setup -T -D -a 2
-%{__mv} sqlite-%{sqlite_amalgamation_version} sqlite-amalgamation
+%{__mv} sqlite-autoconf-%{sqlite_amalgamation_version} sqlite-amalgamation
 %endif
 
 %if !%{with_system_python}
@@ -284,11 +284,9 @@ echo "Setting up included %{SOURCE11}"
 %patch1 -p1 -b .rpath
 %patch2 -p1 -b .pie
 %patch3 -p1 -b .kwallet
-%patch4 -p1 -b .ruby
-%patch5 -p1 -b .kwallet2
-%patch6 -p1 -b .rubybind
-%patch7 -p1 -b .swighash
-#%patch11 -p1 -b .apr
+%patch4 -p1 -b .rubybind
+%patch5 -p1 -b .aarch64
+%patch98 -p1 -b .dontdothat
 
 %build
 %if !%{with_system_python}
@@ -325,6 +323,7 @@ export CC=gcc CXX=g++ JAVA_HOME=%{jdk_path} CFLAGS="$RPM_OPT_FLAGS"
 	--disable-neon-version-check \
 	--with-apr=%{_prefix} \
 	--with-apr-util=%{_prefix} \
+	--with-apache-libexecdir=%{_libdir}/httpd/modules \
 	--with-apxs=%{_sbindir}/apxs \
 	--with-berkeley-db \
 %if %{with_system_neon}
@@ -575,6 +574,14 @@ fi
 %endif
 
 %changelog
+* Mon Aug 12 2013 Kevin White <github-kevin@kevbo.org> - 1.8.1-0.1
+- Update to 1.8.1
+- Rebase patches to current Fedora patches
+- Add subversion-1.8.0-dontdothat.patch, to contine to install
+  mod_dontdothat
+- Use local sqlite_amalgation (as a newer version is now requred)
+- Add option to configure to set mod_dav location
+
 * Mon Aug 12 2013 Kevin White <github-kevin@kevbo.org> - 1.7.11-0.1
 - Update to 1.7.11
 - Remove source references to old neon/python
